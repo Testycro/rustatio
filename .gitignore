@@ -1,0 +1,27 @@
+# Rust
+/target
+Cargo.lock
+
+# Node
+ui/node_modules
+ui/dist
+
+# Tauri
+src-tauri/target
+gen/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# Config (optional - uncomment if you don't want to commit user configs)
+# rustatio.toml

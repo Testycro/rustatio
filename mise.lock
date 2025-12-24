@@ -1,0 +1,8 @@
+[[tools.node]]
+version = "25.2.1"
+backend = "core:node"
+"platforms.linux-x64" = { checksum = "sha256:2094ecdc844ea11e9777cac42672b0d89cd63d27204193a587dc5a2d276bb940", url = "https://nodejs.org/dist/v25.2.1/node-v25.2.1-linux-x64.tar.gz"}
+
+[[tools.rust]]
+version = "1.92.0"
+backend = "core:rust"
