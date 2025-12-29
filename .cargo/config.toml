@@ -19,14 +19,6 @@ rustflags = ["-C", "link-arg=-fuse-ld=mold"]
 # Use lld on Windows
 rustflags = ["-C", "link-arg=-fuse-ld=lld-link"]
 
-[target.x86_64-apple-darwin]
-# Use zld on macOS (faster than default ld)
-rustflags = ["-C", "link-arg=-fuse-ld=zld"]
-
-[target.aarch64-apple-darwin]
-# Use zld on macOS ARM (faster than default ld)
-rustflags = ["-C", "link-arg=-fuse-ld=zld"]
-
 [profile.dev]
 # Split debuginfo to speed up linking
 split-debuginfo = "unpacked"  # Linux/macOS: unpacked, Windows: packed

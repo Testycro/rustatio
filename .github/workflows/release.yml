@@ -137,10 +137,6 @@ jobs:
             clang \
             mold
 
-      - name: Install fast linker (macOS)
-        if: startsWith(matrix.platform, 'macos')
-        run: brew install michaeleisel/zld/zld
-
       - name: Install mise
         uses: jdx/mise-action@v2
 
