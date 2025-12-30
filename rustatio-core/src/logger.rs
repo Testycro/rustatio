@@ -1,6 +1,31 @@
 // Platform-agnostic logger module
 // Native (desktop) uses Tauri Emitter, WASM uses web_sys console
 
+use std::cell::RefCell;
+
+// Thread-local storage for instance context
+thread_local! {
+    static INSTANCE_CONTEXT: RefCell<Option<u32>> = const { RefCell::new(None) };
+}
+
+/// Set the instance context for the current thread
+pub fn set_instance_context(instance_id: Option<u32>) {
+    INSTANCE_CONTEXT.with(|ctx| {
+        *ctx.borrow_mut() = instance_id;
+    });
+}
+
+/// Get the current instance context
+fn get_instance_prefix() -> String {
+    INSTANCE_CONTEXT.with(|ctx| {
+        if let Some(id) = *ctx.borrow() {
+            format!("[Instance {}] ", id)
+        } else {
+            String::new()
+        }
+    })
+}
+
 #[cfg(all(not(target_arch = "wasm32"), feature = "native"))]
 pub mod native {
     use serde::Serialize;
@@ -51,26 +76,30 @@ pub mod native {
 
     /// Log at info level (both to console and UI)
     pub fn info(message: String) {
-        log::info!("{}", message);
-        emit_log("info", message);
+        let prefixed = format!("{}{}", super::get_instance_prefix(), message);
+        log::info!("{}", prefixed);
+        emit_log("info", prefixed);
     }
 
     /// Log at warn level (both to console and UI)
     pub fn warn(message: String) {
-        log::warn!("{}", message);
-        emit_log("warn", message);
+        let prefixed = format!("{}{}", super::get_instance_prefix(), message);
+        log::warn!("{}", prefixed);
+        emit_log("warn", prefixed);
     }
 
     /// Log at error level (both to console and UI)
     pub fn error(message: String) {
-        log::error!("{}", message);
-        emit_log("error", message);
+        let prefixed = format!("{}{}", super::get_instance_prefix(), message);
+        log::error!("{}", prefixed);
+        emit_log("error", prefixed);
     }
 
     /// Log at debug level (both to console and UI)
     pub fn debug(message: String) {
-        log::debug!("{}", message);
-        emit_log("debug", message);
+        let prefixed = format!("{}{}", super::get_instance_prefix(), message);
+        log::debug!("{}", prefixed);
+        emit_log("debug", prefixed);
     }
 }
 
@@ -126,22 +155,26 @@ pub mod wasm {
 
     /// Log at info level to browser console and UI
     pub fn info(message: String) {
-        emit_log("info", &message);
+        let prefixed = format!("{}{}", super::get_instance_prefix(), message);
+        emit_log("info", &prefixed);
     }
 
     /// Log at warn level to browser console and UI
     pub fn warn(message: String) {
-        emit_log("warn", &message);
+        let prefixed = format!("{}{}", super::get_instance_prefix(), message);
+        emit_log("warn", &prefixed);
     }
 
     /// Log at error level to browser console and UI
     pub fn error(message: String) {
-        emit_log("error", &message);
+        let prefixed = format!("{}{}", super::get_instance_prefix(), message);
+        emit_log("error", &prefixed);
     }
 
     /// Log at debug level to browser console and UI
     pub fn debug(message: String) {
-        emit_log("debug", &message);
+        let prefixed = format!("{}{}", super::get_instance_prefix(), message);
+        emit_log("debug", &prefixed);
     }
 
     /// No-op for WASM (no app handle needed)

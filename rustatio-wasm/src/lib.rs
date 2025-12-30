@@ -54,6 +54,9 @@ pub fn load_torrent(file_bytes: &[u8]) -> Result<JsValue, JsValue> {
 
 #[wasm_bindgen]
 pub async fn start_faker(id: u32, torrent_json: JsValue, config_json: JsValue) -> Result<(), JsValue> {
+    // Set instance context for logging
+    rustatio_core::logger::set_instance_context(Some(id));
+
     let torrent: TorrentInfo =
         serde_wasm_bindgen::from_value(torrent_json).map_err(|e| JsValue::from_str(&e.to_string()))?;
 
@@ -73,6 +76,9 @@ pub async fn start_faker(id: u32, torrent_json: JsValue, config_json: JsValue) -
 
 #[wasm_bindgen]
 pub async fn update_faker(id: u32) -> Result<JsValue, JsValue> {
+    // Set instance context for logging
+    rustatio_core::logger::set_instance_context(Some(id));
+
     // Take the faker out temporarily
     let mut faker = INSTANCES.with(|instances| {
         instances
@@ -97,6 +103,9 @@ pub async fn update_faker(id: u32) -> Result<JsValue, JsValue> {
 
 #[wasm_bindgen]
 pub async fn update_stats_only(id: u32) -> Result<JsValue, JsValue> {
+    // Set instance context for logging
+    rustatio_core::logger::set_instance_context(Some(id));
+
     // Take the faker out temporarily
     let mut faker = INSTANCES.with(|instances| {
         instances
@@ -145,6 +154,9 @@ pub async fn get_stats(id: u32) -> Result<JsValue, JsValue> {
 
 #[wasm_bindgen]
 pub async fn stop_faker(id: u32) -> Result<(), JsValue> {
+    // Set instance context for logging
+    rustatio_core::logger::set_instance_context(Some(id));
+
     // Take the faker out temporarily
     let mut faker = INSTANCES.with(|instances| {
         instances
@@ -166,6 +178,9 @@ pub async fn stop_faker(id: u32) -> Result<(), JsValue> {
 
 #[wasm_bindgen]
 pub async fn pause_faker(id: u32) -> Result<(), JsValue> {
+    // Set instance context for logging
+    rustatio_core::logger::set_instance_context(Some(id));
+
     // Take the faker out temporarily
     let mut faker = INSTANCES.with(|instances| {
         instances
@@ -187,6 +202,9 @@ pub async fn pause_faker(id: u32) -> Result<(), JsValue> {
 
 #[wasm_bindgen]
 pub async fn resume_faker(id: u32) -> Result<(), JsValue> {
+    // Set instance context for logging
+    rustatio_core::logger::set_instance_context(Some(id));
+
     // Take the faker out temporarily
     let mut faker = INSTANCES.with(|instances| {
         instances
@@ -208,6 +226,9 @@ pub async fn resume_faker(id: u32) -> Result<(), JsValue> {
 
 #[wasm_bindgen]
 pub async fn scrape_tracker(id: u32) -> Result<JsValue, JsValue> {
+    // Set instance context for logging
+    rustatio_core::logger::set_instance_context(Some(id));
+
     // Take the faker out temporarily
     let faker = INSTANCES.with(|instances| {
         instances

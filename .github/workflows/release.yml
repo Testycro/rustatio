@@ -111,7 +111,7 @@ jobs:
       - name: Build Web Version (WASM + UI)
         env:
           GITHUB_PAGES: true
-        run: mise run build-web
+        run: mise run build:web
 
       - name: Upload web dist artifact
         uses: actions/upload-artifact@v4
@@ -189,7 +189,7 @@ jobs:
         run: rustup target add wasm32-unknown-unknown
 
       - name: Build UI for Desktop (without GitHub Pages base path)
-        run: mise run build-web
+        run: mise run build:web
 
       - name: Update version in Cargo.toml
         shell: bash
@@ -243,7 +243,7 @@ jobs:
         with:
           projectPath: rustatio-desktop
           tagName: ${{ needs.prepare-release.outputs.tag }}
-          releaseName: "Rustatio ${{ needs.prepare-release.outputs.tag }}"
+          releaseName: ${{ needs.prepare-release.outputs.tag }}
           releaseDraft: true
           prerelease: false
           args: ${{ matrix.args }}
@@ -276,7 +276,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ needs.prepare-release.outputs.tag }}
-          name: "Rustatio ${{ needs.prepare-release.outputs.tag }}"
+          name: ${{ needs.prepare-release.outputs.tag }}
           draft: false
           generate_release_notes: true
           fail_on_unmatched_files: false

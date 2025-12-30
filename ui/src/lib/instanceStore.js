@@ -21,6 +21,10 @@ function createDefaultInstance(id, defaults = {}) {
     liveStatsInterval: null,
     countdownInterval: null,
 
+    // Cumulative stats (preserved across sessions, not editable by user)
+    cumulativeUploaded: defaults.cumulativeUploaded !== undefined ? defaults.cumulativeUploaded : 0,
+    cumulativeDownloaded: defaults.cumulativeDownloaded !== undefined ? defaults.cumulativeDownloaded : 0,
+
     // Form values
     selectedClient: defaults.selectedClient || 'qbittorrent',
     selectedClientVersion: defaults.selectedClientVersion || null,
@@ -94,6 +98,8 @@ async function saveSession(instances, activeId) {
         completion_percent: parseFloat(inst.completionPercent),
         initial_uploaded: parseInt(inst.initialUploaded) * 1024 * 1024,
         initial_downloaded: parseInt(inst.initialDownloaded) * 1024 * 1024,
+        cumulative_uploaded: parseInt(inst.cumulativeUploaded) * 1024 * 1024,
+        cumulative_downloaded: parseInt(inst.cumulativeDownloaded) * 1024 * 1024,
         randomize_rates: inst.randomizeRates,
         random_range_percent: parseFloat(inst.randomRangePercent),
         update_interval_seconds: parseInt(inst.updateIntervalSeconds),
@@ -118,6 +124,7 @@ async function saveSession(instances, activeId) {
       const sessionData = {
         instances: instances.map(inst => ({
           torrent_path: inst.torrentPath || null,
+          torrent_data: inst.torrent || null, // Save the actual torrent object for web
           selected_client: inst.selectedClient,
           selected_client_version: inst.selectedClientVersion,
           upload_rate: parseFloat(inst.uploadRate),
@@ -126,6 +133,8 @@ async function saveSession(instances, activeId) {
           completion_percent: parseFloat(inst.completionPercent),
           initial_uploaded: parseInt(inst.initialUploaded) * 1024 * 1024, // Convert MB to bytes
           initial_downloaded: parseInt(inst.initialDownloaded) * 1024 * 1024,
+          cumulative_uploaded: parseInt(inst.cumulativeUploaded) * 1024 * 1024,
+          cumulative_downloaded: parseInt(inst.cumulativeDownloaded) * 1024 * 1024,
           randomize_rates: inst.randomizeRates,
           random_range_percent: parseFloat(inst.randomRangePercent),
           update_interval_seconds: parseInt(inst.updateIntervalSeconds),
@@ -177,6 +186,7 @@ function loadSessionFromStorage(config = null) {
     return {
       instances: sessionData.instances.map(inst => ({
         torrentPath: inst.torrent_path,
+        torrent: inst.torrent_data || null, // Restore torrent data for web
         selectedClient: inst.selected_client,
         selectedClientVersion: inst.selected_client_version,
         uploadRate: inst.upload_rate,
@@ -185,6 +195,8 @@ function loadSessionFromStorage(config = null) {
         completionPercent: inst.completion_percent,
         initialUploaded: inst.initial_uploaded / (1024 * 1024), // Convert bytes to MB
         initialDownloaded: inst.initial_downloaded / (1024 * 1024),
+        cumulativeUploaded: (inst.cumulative_uploaded || 0) / (1024 * 1024),
+        cumulativeDownloaded: (inst.cumulative_downloaded || 0) / (1024 * 1024),
         randomizeRates: inst.randomize_rates,
         randomRangePercent: inst.random_range_percent,
         updateIntervalSeconds: inst.update_interval_seconds,
@@ -271,9 +283,16 @@ export const instanceActions = {
                 instance.statusType = 'warning';
               }
             } else {
-              // Web: Can't restore from path, user must re-upload
-              instance.statusMessage = 'Please re-upload your torrent file';
-              instance.statusType = 'warning';
+              // Web: Restore from saved torrent data
+              if (savedInst.torrent) {
+                instance.torrent = savedInst.torrent;
+                instance.torrentPath = savedInst.torrentPath;
+                instance.statusMessage = 'Ready to start faking';
+                instance.statusType = 'idle';
+              } else {
+                instance.statusMessage = 'Please re-upload your torrent file';
+                instance.statusType = 'warning';
+              }
             }
           }
 
@@ -314,7 +333,7 @@ export const instanceActions = {
   // Add a new instance
   addInstance: async (defaults = {}) => {
     try {
-      const instanceId = api.createInstance();
+      const instanceId = await api.createInstance();
       const newInstance = createDefaultInstance(instanceId, defaults);
 
       instances.update(insts => [...insts, newInstance]);

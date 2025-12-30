@@ -21,6 +21,9 @@
   import Logs from './components/Logs.svelte';
   import ProxySettings from './components/ProxySettings.svelte';
 
+  // Check if running in Tauri
+  const isTauri = typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window;
+
   // Loading state to prevent UI flash during initialization
   let isInitialized = $state(false);
 
@@ -331,10 +334,14 @@
       const torrent = await api.loadTorrent(file);
       devLog('log', 'Loaded torrent:', torrent);
 
+      // For desktop (Tauri): save the full file path
+      // For web: save the torrent name (we'll serialize the torrent object itself)
+      const torrentPath = isTauri ? file : file.name;
+
       // Update instance with torrent info
       instanceActions.updateInstance($activeInstance.id, {
         torrent,
-        torrentPath: file.name,
+        torrentPath,
         statusMessage: 'Torrent loaded successfully',
         statusType: 'success',
       });
@@ -376,11 +383,15 @@
     }
 
     try {
-      // Use the initial uploaded/downloaded values from the form inputs
-      // Do NOT preserve stats from previous session - each session should start fresh
-      // This ensures stop conditions work correctly and don't trigger immediately
-      const initialUploaded = parseInt($activeInstance.initialUploaded ?? 0) * 1024 * 1024;
-      const initialDownloaded = parseInt($activeInstance.initialDownloaded ?? 0) * 1024 * 1024;
+      // Use cumulative stats if available (preserved across sessions), otherwise use form input values
+      // Cumulative stats take precedence to maintain lifetime totals
+      const hasCumulativeStats = ($activeInstance.cumulativeUploaded > 0 || $activeInstance.cumulativeDownloaded > 0);
+      const initialUploaded = hasCumulativeStats 
+        ? parseInt($activeInstance.cumulativeUploaded ?? 0) * 1024 * 1024
+        : parseInt($activeInstance.initialUploaded ?? 0) * 1024 * 1024;
+      const initialDownloaded = hasCumulativeStats
+        ? parseInt($activeInstance.cumulativeDownloaded ?? 0) * 1024 * 1024
+        : parseInt($activeInstance.initialDownloaded ?? 0) * 1024 * 1024;
 
       // Reset stats and progress bars when starting a new session
       // This ensures stop conditions and progress indicators start fresh
@@ -586,6 +597,9 @@
         statusType: 'running',
       });
 
+      // Get final stats before stopping to save cumulative totals
+      const finalStats = $activeInstance.stats;
+
       await api.stopFaker($activeInstance.id);
 
       // Clear intervals
@@ -599,8 +613,8 @@
         clearInterval($activeInstance.liveStatsInterval);
       }
 
-      // Update instance - keep stats visible for review
-      instanceActions.updateInstance($activeInstance.id, {
+      // Save cumulative stats for next session
+      const updates = {
         isRunning: false,
         nextUpdateIn: 0,
         updateInterval: null,
@@ -608,7 +622,16 @@
         liveStatsInterval: null,
         statusMessage: 'Stopped successfully - Stats available for review',
         statusType: 'success',
-      });
+      };
+
+      // Update cumulative stats with final totals (convert bytes to MB)
+      if (finalStats) {
+        updates.cumulativeUploaded = Math.round(finalStats.uploaded / (1024 * 1024));
+        updates.cumulativeDownloaded = Math.round(finalStats.downloaded / (1024 * 1024));
+      }
+
+      // Update instance - keep stats visible for review
+      instanceActions.updateInstance($activeInstance.id, updates);
 
       const instanceId = $activeInstance.id;
       setTimeout(() => {
