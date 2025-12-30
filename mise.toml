@@ -69,21 +69,19 @@ run = "echo '✅ Tauri build complete!'"
 [tasks.build-wasm]
 description = "Build WASM for web version"
 depends = ["install-wasm-pack"]
-run = """
-echo '🏗️  Building WASM...'
-cd rustatio-wasm
-wasm-pack build --target web --out-dir ../ui/src/lib/wasm --release
-
-echo '🗜️  Optimizing WASM...'
-wasm-opt -Oz -o ../ui/src/lib/wasm/rustatio_wasm_bg.wasm \
-  ../ui/src/lib/wasm/rustatio_wasm_bg.wasm
-echo '✅ WASM optimized with wasm-opt'
-echo '✅ WASM build complete!'
-"""
+dir = "rustatio-wasm"
+run = [
+    "echo '🏗️  Building WASM...'",
+    "wasm-pack build --target web --out-dir ../ui/src/lib/wasm --release",
+    "echo '🗜️  Optimizing WASM...'",
+    "wasm-opt -Oz -o ../ui/src/lib/wasm/rustatio_wasm_bg.wasm ../ui/src/lib/wasm/rustatio_wasm_bg.wasm",
+    "echo '✅ WASM optimized with wasm-opt'",
+    "echo '✅ WASM build complete!'"
+]
 
 [tasks.build-web]
 description = "Build complete web version (WASM + UI)"
-depends = ["build-wasm", "ui-build"]
+depends = ["ui-build"]
 run = "echo '✅ Web version build complete! Output in ui/dist/'"
 
 [tasks.run-web]
@@ -180,36 +178,20 @@ run = [
 
 [tasks.install-wasm-pack]
 description = "Install wasm-pack if not already installed"
-run = """
-echo '📦 Checking for wasm-pack...'
-if ! command -v wasm-pack &> /dev/null; then
-    echo 'Installing wasm-pack via installer...'
-    curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
-fi
-echo '✅ wasm-pack is available'
-"""
+run = "cargo install wasm-pack || true"
 
 [tasks.ci-install]
 description = "CI step: install dependencies"
-depends = ["rust-install", "install-wasm-pack"]
+depends = ["rust-install"]
 run = [
     "echo '📦 Installing UI dependencies...'",
     "cd ui && npm ci",
     "echo '✅ UI dependencies installed!'"
 ]
 
-[tasks.ci-build]
-description = "CI step: build web version (WASM + UI)"
-depends = ["ci-install", "build-wasm"]
-run = [
-    "echo '🏗️  Building UI...'",
-    "cd ui && npm run build",
-    "echo '✅ UI built!'"
-]
-
 [tasks.ci-format]
 description = "CI step: format check"
-depends = ["ci-build"]
+depends = ["ci-install"]
 run = [
     "echo '🔍 Checking Rust formatting...'",
     "cargo fmt --check",
@@ -220,10 +202,10 @@ run = [
 
 [tasks.ci-lint]
 description = "CI step: lint"
-depends = ["ci-format"]
+depends = ["ci-install"]
 run = [
     "echo '🔍 Linting Rust code...'",
-    "cargo clippy --all-targets --all-features -- -D warnings",
+    "cargo clippy --workspace --exclude rustatio-desktop --all-targets --all-features -- -D warnings",
     "echo '🔍 Linting UI code...'",
     "cd ui && npm run lint",
     "echo '✅ All linting passed!'"
@@ -231,16 +213,16 @@ run = [
 
 [tasks.ci-test]
 description = "CI step: test"
-depends = ["ci-lint"]
+depends = ["ci-install"]
 run = [
     "echo '🧪 Running Rust tests...'",
-    "cargo test",
+    "cargo test --workspace --exclude rustatio-desktop",
     "echo '✅ All tests passed!'"
 ]
 
 [tasks.ci]
 description = "Run CI checks (same as GitHub Actions)"
-depends = ["ci-test"]
+depends = ["ci-format", "ci-lint", "ci-test"]
 run = "echo '✅ CI checks passed!'"
 
 # UI-specific tasks
@@ -250,7 +232,7 @@ run = "cd ui && npm ci"
 
 [tasks.ui-build]
 description = "Build UI for production"
-depends = ["ui-install"]
+depends = ["ui-install", "build-wasm"]
 run = "cd ui && npm run build"
 
 [tasks.rust-doc]

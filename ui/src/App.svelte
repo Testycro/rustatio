@@ -4,12 +4,7 @@
   import { initWasm, api, listenToLogs } from './lib/api.js';
 
   // Import instance stores
-  import {
-    instances,
-    activeInstance,
-    instanceActions,
-    saveSession,
-  } from './lib/instanceStore.js';
+  import { instances, activeInstance, instanceActions, saveSession } from './lib/instanceStore.js';
 
   // Import components
   import Header from './components/Header.svelte';
@@ -100,9 +95,9 @@
       showLogs = storedShowLogs ? JSON.parse(storedShowLogs) : false;
 
       // Set up log listener (works for both Tauri and web)
-      await listenToLogs((logEvent) => {
+      await listenToLogs(logEvent => {
         logs = [...logs, logEvent];
-        
+
         // Limit logs to prevent memory issues (keep last 500)
         if (logs.length > 500) {
           logs = logs.slice(-500);

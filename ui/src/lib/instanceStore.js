@@ -116,32 +116,32 @@ async function saveSession(instances, activeId) {
     } else {
       // Web: Save to localStorage
       const sessionData = {
-      instances: instances.map(inst => ({
-        torrent_path: inst.torrentPath || null,
-        selected_client: inst.selectedClient,
-        selected_client_version: inst.selectedClientVersion,
-        upload_rate: parseFloat(inst.uploadRate),
-        download_rate: parseFloat(inst.downloadRate),
-        port: parseInt(inst.port),
-        completion_percent: parseFloat(inst.completionPercent),
-        initial_uploaded: parseInt(inst.initialUploaded) * 1024 * 1024, // Convert MB to bytes
-        initial_downloaded: parseInt(inst.initialDownloaded) * 1024 * 1024,
-        randomize_rates: inst.randomizeRates,
-        random_range_percent: parseFloat(inst.randomRangePercent),
-        update_interval_seconds: parseInt(inst.updateIntervalSeconds),
-        stop_at_ratio_enabled: inst.stopAtRatioEnabled,
-        stop_at_ratio: parseFloat(inst.stopAtRatio),
-        stop_at_uploaded_enabled: inst.stopAtUploadedEnabled,
-        stop_at_uploaded_gb: parseFloat(inst.stopAtUploadedGB),
-        stop_at_downloaded_enabled: inst.stopAtDownloadedEnabled,
-        stop_at_downloaded_gb: parseFloat(inst.stopAtDownloadedGB),
-        stop_at_seed_time_enabled: inst.stopAtSeedTimeEnabled,
-        stop_at_seed_time_hours: parseFloat(inst.stopAtSeedTimeHours),
-        progressive_rates_enabled: inst.progressiveRatesEnabled,
-        target_upload_rate: parseFloat(inst.targetUploadRate),
-        target_download_rate: parseFloat(inst.targetDownloadRate),
-        progressive_duration_hours: parseFloat(inst.progressiveDurationHours),
-      })),
+        instances: instances.map(inst => ({
+          torrent_path: inst.torrentPath || null,
+          selected_client: inst.selectedClient,
+          selected_client_version: inst.selectedClientVersion,
+          upload_rate: parseFloat(inst.uploadRate),
+          download_rate: parseFloat(inst.downloadRate),
+          port: parseInt(inst.port),
+          completion_percent: parseFloat(inst.completionPercent),
+          initial_uploaded: parseInt(inst.initialUploaded) * 1024 * 1024, // Convert MB to bytes
+          initial_downloaded: parseInt(inst.initialDownloaded) * 1024 * 1024,
+          randomize_rates: inst.randomizeRates,
+          random_range_percent: parseFloat(inst.randomRangePercent),
+          update_interval_seconds: parseInt(inst.updateIntervalSeconds),
+          stop_at_ratio_enabled: inst.stopAtRatioEnabled,
+          stop_at_ratio: parseFloat(inst.stopAtRatio),
+          stop_at_uploaded_enabled: inst.stopAtUploadedEnabled,
+          stop_at_uploaded_gb: parseFloat(inst.stopAtUploadedGB),
+          stop_at_downloaded_enabled: inst.stopAtDownloadedEnabled,
+          stop_at_downloaded_gb: parseFloat(inst.stopAtDownloadedGB),
+          stop_at_seed_time_enabled: inst.stopAtSeedTimeEnabled,
+          stop_at_seed_time_hours: parseFloat(inst.stopAtSeedTimeHours),
+          progressive_rates_enabled: inst.progressiveRatesEnabled,
+          target_upload_rate: parseFloat(inst.targetUploadRate),
+          target_download_rate: parseFloat(inst.targetDownloadRate),
+          progressive_duration_hours: parseFloat(inst.progressiveDurationHours),
+        })),
         active_instance_id: instances.findIndex(inst => inst.id === activeId),
       };
 
@@ -159,7 +159,7 @@ async function saveSession(instances, activeId) {
 function loadSessionFromStorage(config = null) {
   try {
     let sessionData;
-    
+
     if (isTauri && config) {
       // Desktop: Load from Tauri config
       sessionData = config;
@@ -243,7 +243,7 @@ export const instanceActions = {
         config = await api.getConfig();
         globalConfig.set(config);
       }
-      
+
       const savedSession = loadSessionFromStorage(config);
 
       if (savedSession && savedSession.instances && savedSession.instances.length > 0) {

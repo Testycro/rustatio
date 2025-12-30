@@ -6,7 +6,7 @@
 
   let showDetails = $state(false);
   let fileInput;
-  
+
   // Check if running in Tauri
   const isTauri = typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window;
 
