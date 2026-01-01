@@ -4,7 +4,13 @@
   import { initWasm, api, listenToLogs } from './lib/api.js';
 
   // Import instance stores
-  import { instances, activeInstance, instanceActions, saveSession } from './lib/instanceStore.js';
+  import {
+    instances,
+    activeInstance,
+    activeInstanceId,
+    instanceActions,
+    saveSession,
+  } from './lib/instanceStore.js';
 
   // Import components
   import Header from './components/Header.svelte';
@@ -701,6 +707,64 @@
     }
   }
 
+  // Start all instances with torrents loaded
+  async function startAllInstances() {
+    const currentInstances = get(instances);
+    const instancesToStart = currentInstances.filter(inst => inst.torrent && !inst.isRunning);
+
+    if (instancesToStart.length === 0) {
+      return;
+    }
+
+    const previousActiveId = get(activeInstanceId);
+
+    for (const instance of instancesToStart) {
+      // Temporarily select this instance and start it
+      instanceActions.selectInstance(instance.id);
+
+      try {
+        await startFaking();
+      } catch (error) {
+        console.error(`Failed to start instance ${instance.id}:`, error);
+      }
+    }
+
+    // Restore previous active instance if it still exists
+    const updatedInstances = get(instances);
+    if (previousActiveId && updatedInstances.find(i => i.id === previousActiveId)) {
+      instanceActions.selectInstance(previousActiveId);
+    }
+  }
+
+  // Stop all running instances
+  async function stopAllInstances() {
+    const currentInstances = get(instances);
+    const instancesToStop = currentInstances.filter(inst => inst.isRunning);
+
+    if (instancesToStop.length === 0) {
+      return;
+    }
+
+    const previousActiveId = get(activeInstanceId);
+
+    for (const instance of instancesToStop) {
+      // Temporarily select this instance and stop it
+      instanceActions.selectInstance(instance.id);
+
+      try {
+        await stopFaking();
+      } catch (error) {
+        console.error(`Failed to stop instance ${instance.id}:`, error);
+      }
+    }
+
+    // Restore previous active instance if it still exists
+    const updatedInstances = get(instances);
+    if (previousActiveId && updatedInstances.find(i => i.id === previousActiveId)) {
+      instanceActions.selectInstance(previousActiveId);
+    }
+  }
+
   // Manual update
   async function manualUpdate() {
     if (!$activeInstance || !$activeInstance.isRunning) {
@@ -788,7 +852,7 @@
       {manualUpdate}
     />
 
-    <InstanceTabs />
+    <InstanceTabs onStartAll={startAllInstances} onStopAll={stopAllInstances} />
 
     <StatusBar
       statusMessage={$activeInstance?.statusMessage || 'Select a torrent file to begin'}
@@ -891,8 +955,6 @@
           <TotalStats
             stats={$activeInstance.stats}
             torrent={$activeInstance.torrent}
-            cumulativeUploaded={$activeInstance.cumulativeUploaded}
-            cumulativeDownloaded={$activeInstance.cumulativeDownloaded}
             {formatBytes}
           />
         </div>

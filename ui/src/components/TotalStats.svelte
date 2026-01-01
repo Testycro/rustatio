@@ -1,20 +1,16 @@
 <script>
   import Card from '$lib/components/ui/card.svelte';
 
-  let { stats, torrent, cumulativeUploaded, cumulativeDownloaded, formatBytes } = $props();
+  let { stats, torrent, formatBytes } = $props();
 
-  // Total stats should show: cumulative (from previous sessions) + current session progress
-  // Only use session_uploaded/session_downloaded (which start at 0) to show actual progress
+  // Total stats should show the current total from stats.uploaded/downloaded
+  // These values already include initial values (cumulative from previous sessions)
   let totalUploaded = $derived(() => {
-    const cumulativeBytes = (cumulativeUploaded || 0) * 1024 * 1024;
-    const sessionBytes = stats.session_uploaded || 0;
-    return cumulativeBytes + sessionBytes;
+    return stats.uploaded || 0;
   });
 
   let totalDownloaded = $derived(() => {
-    const cumulativeBytes = (cumulativeDownloaded || 0) * 1024 * 1024;
-    const sessionBytes = stats.session_downloaded || 0;
-    return cumulativeBytes + sessionBytes;
+    return stats.downloaded || 0;
   });
 
   // Ratio = total_uploaded / torrent_total_size (not downloaded!)
