@@ -1,10 +1,29 @@
 <script>
+  import { onMount } from 'svelte';
+
   let { isOpen = $bindable(false) } = $props();
 
-  const version = '0.2.0';
+  let version = $state('0.0.0');
   const author = 'Dylann Batisse';
   const license = 'MIT';
   const repository = 'https://github.com/takitsu21/rustatio';
+
+  // Check if running in Tauri
+  const isTauri = typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window;
+
+  onMount(async () => {
+    if (isTauri) {
+      try {
+        const { getVersion } = await import('@tauri-apps/api/app');
+        version = await getVersion();
+      } catch (e) {
+        console.error('Failed to get app version:', e);
+      }
+    } else {
+      // For web version, try to get from package.json or use a default
+      version = 'Web';
+    }
+  });
 
   function close() {
     isOpen = false;

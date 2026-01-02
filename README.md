@@ -11,6 +11,31 @@ Accurately simulate seeding behavior by emulating **uTorrent**, **qBittorrent**,
 
 [https://github.com/takitsu21/rustatio/assets/demo.mp4](https://github.com/user-attachments/assets/58db1bb5-37a6-4e93-9939-1d28556aeff8)
 
+## 📸 Screenshots
+
+<table>
+  <tr>
+    <td width="50%">
+      <img src="screenshots/desktop-light.png" alt="Rustatio Light Theme">
+      <p align="center"><em>Light Theme - Main Interface</em></p>
+    </td>
+    <td width="50%">
+      <img src="screenshots/desktop-dark.png" alt="Rustatio Dark Theme">
+      <p align="center"><em>Dark Theme - Main Interface</em></p>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+      <img src="screenshots/loaded-torrent.png" alt="Loaded Torrent">
+      <p align="center"><em>Torrent Loaded with Statistics</em></p>
+    </td>
+    <td width="50%">
+      <img src="screenshots/in-progress-torrent.png" alt="Torrent in Progress">
+      <p align="center"><em>Active Torrent with Performance Charts</em></p>
+    </td>
+  </tr>
+</table>
+
 ## ✨ Features
 
 - **Modern GUI**: Beautiful, intuitive interface built with Tauri and Svelte
