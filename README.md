@@ -197,7 +197,7 @@ To change the web UI port:
 
 ```bash
 # Using docker run
-docker run -d -p 3000:8080 --name rustatio ghcr.io/takitsu21/rustatio:latest
+docker run -d -p 3000:8080 --name rustatio ghcr.io/testycro/rustatio:latest
 
 # Using docker compose - change the ports mapping
 ports:
@@ -263,7 +263,7 @@ services:
 
 ### Web App Usage
 
-**Live Demo**: [https://takitsu21.github.io/rustatio/](https://takitsu21.github.io/rustatio/)
+**Live Demo**: [https://testycro.github.io/rustatio/](https://testycro.github.io/rustatio/)
 
 The web version runs entirely in your browser using WebAssembly. 
 
