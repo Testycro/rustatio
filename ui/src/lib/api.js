@@ -303,6 +303,12 @@ export function emitLog(level, message) {
 
 // Server API helper with logging and authentication
 async function serverFetch(endpoint, options = {}, logMessage = null) {
+  // Ne proxifier que les appels API Rustatio
+  // Les annonces tracker WASM utilisent des URLs complètes → ne pas les proxifier
+  if (!endpoint.startsWith('/api')) {
+    return fetch(endpoint, options);
+  }
+
   // Build API base URL
   const apiBase = serverBaseUrl || getApiBaseUrl() || '';
 
